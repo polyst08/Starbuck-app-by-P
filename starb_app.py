@@ -1,36 +1,62 @@
-import streamlit as st      
-import pandas as pd          
-import numpy as np            
- 
+import streamlit as st
+import pandas as pd
+
+# --- Function to load and prepare data ---
 @st.cache_data
 def load_data(nrows):
     data = pd.read_csv('directory 1.csv', nrows=nrows)
-    lowercase = lambda x: str(x).lower()
-    data.rename(lowercase, axis='columns', inplace=True)
+    # Normalize column headers
+    data.columns = [str(c).strip().lower().replace(' ', '_') for c in data.columns]
     return data
- 
-# Display a loading message
+
+# --- Country code to full name mapping ---
+country_names = {
+    'AD': 'Andorra',
+    'AE': 'United Arab Emirates',
+    'US': 'United States',
+    'GB': 'United Kingdom',
+    'CA': 'Canada',
+    'FR': 'France',
+    'DE': 'Germany',
+    'CN': 'China',
+    'JP': 'Japan',
+    'IN': 'India',
+    'SA': 'Saudi Arabia',
+    'KW': 'Kuwait',
+    'QA': 'Qatar',
+    'OM': 'Oman',
+    'BH': 'Bahrain',
+    'SG': 'Singapore',
+    'MY': 'Malaysia',
+    'TH': 'Thailand',
+    # Add more codes as needed
+}
+
+# --- Load data ---
 data_load_state = st.text('Loading data...')
- 
-# Load 10,000 rows of data
 data = load_data(10000)
- 
-# Notify that loading is complete
 data_load_state.text('Done! (Using st.cache_data)')
- 
+
+# --- Add full country name column ---
+if 'country' in data.columns:
+    data['country_full_name'] = data['country'].map(country_names).fillna('Unknown')
+
+# --- Show raw data ---
+st.subheader('Raw Data')
+st.write(data)
+
 # --- Bar chart: Number of stores per country ---
 if 'country' in data.columns:
     st.subheader('Number of Starbucks Stores per Country')
 
     # Count number of stores per country
-    country_counts = data['country'].value_counts().reset_index()
-    country_counts.columns = ['country', 'store_count']
+    country_counts = data.groupby(['country', 'country_full_name']).size().reset_index(name='store_count')
 
-    # Display data table
+    # Display table
     st.dataframe(country_counts)
 
-    # Display bar chart
-    st.bar_chart(country_counts.set_index('country'))
+    # Bar chart visualization
+    st.bar_chart(country_counts.set_index('country')['store_count'])
 else:
     st.error("The dataset doesn't have a 'Country' column. Please check your CSV file.")
 
@@ -42,7 +68,7 @@ if 'city' in data.columns:
     city_options = sorted(data['city'].dropna().unique())
     selected_city = st.selectbox('Select a City:', city_options)
 
-    # Filter data for the selected city
+    # Filter data for selected city
     filtered_data = data[data['city'] == selected_city]
 
     st.write(f"### Showing Starbucks stores in **{selected_city}**")
@@ -52,4 +78,3 @@ if 'city' in data.columns:
     if {'latitude', 'longitude'}.issubset(filtered_data.columns):
         st.subheader("Map of Starbucks Stores in Selected City")
         st.map(filtered_data[['latitude', 'longitude']])
-
