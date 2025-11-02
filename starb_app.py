@@ -85,13 +85,31 @@ if 'country_full_name' in data.columns:
     selected_country = st.selectbox('Select a Country:', country_options)
 
     # Filter data for selected country
-    filtered_data = data[data['country_full_name'] == selected_country]
+    country_filtered_data = data[data['country_full_name'] == selected_country]
 
     st.write(f"### Showing Starbucks stores in **{selected_country}**")
-    st.dataframe(filtered_data)
+    st.dataframe(country_filtered_data)
 
     # --- Map view for selected country ---
-    if {'latitude', 'longitude'}.issubset(filtered_data.columns):
+    if {'latitude', 'longitude'}.issubset(country_filtered_data.columns):
         st.subheader(f"🗺️ Map of Starbucks Stores in {selected_country}")
-        clean_filtered = clean_coords(filtered_data)
-        st.map(clean_filtered[['latitude', 'longitude']])
+        clean_country_data = clean_coords(country_filtered_data)
+        st.map(clean_country_data[['latitude', 'longitude']])
+
+    # --- City filter within selected country ---
+    if 'city' in country_filtered_data.columns:
+        st.subheader(f'🏙️ Find Starbucks Stores by City in {selected_country}')
+        city_options = sorted(country_filtered_data['city'].dropna().unique())
+        selected_city = st.selectbox('Select a City:', city_options)
+
+        # Filter data for selected city
+        city_filtered_data = country_filtered_data[country_filtered_data['city'] == selected_city]
+
+        st.write(f"### Showing Starbucks stores in **{selected_city}, {selected_country}**")
+        st.dataframe(city_filtered_data)
+
+        # --- Map view for selected city ---
+        if {'latitude', 'longitude'}.issubset(city_filtered_data.columns):
+            st.subheader(f"🗺️ Map of Starbucks Stores in {selected_city}, {selected_country}")
+            clean_city_data = clean_coords(city_filtered_data)
+            st.map(clean_city_data[['latitude', 'longitude']])
