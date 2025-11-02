@@ -29,8 +29,16 @@ country_names = {
     'SG': 'Singapore',
     'MY': 'Malaysia',
     'TH': 'Thailand',
-    # Add more codes as needed
+    # Add more as needed
 }
+
+# --- Function to clean coordinates ---
+def clean_coords(df):
+    df = df.copy()
+    df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
+    df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
+    df = df.dropna(subset=['latitude', 'longitude'])
+    return df
 
 # --- Load data ---
 data_load_state = st.text('Loading data...')
@@ -43,18 +51,19 @@ if 'country' in data.columns:
 
 # --- Show raw data ---
 st.subheader('Raw Data')
-st.write(data)
+st.dataframe(data)
 
 # --- Global map of all Starbucks stores ---
 if {'latitude', 'longitude'}.issubset(data.columns):
     st.subheader('🌍 Map of All Starbucks Stores')
-    st.map(data[['latitude', 'longitude']])
+    clean_data = clean_coords(data)
+    st.map(clean_data[['latitude', 'longitude']])
 else:
     st.warning("No latitude/longitude columns found, cannot plot map.")
 
 # --- Bar chart: Number of stores per country ---
 if 'country' in data.columns:
-    st.subheader('Number of Starbucks Stores per Country')
+    st.subheader('📊 Number of Starbucks Stores per Country')
 
     # Count number of stores per country
     country_counts = data.groupby(['country', 'country_full_name']).size().reset_index(name='store_count')
@@ -69,7 +78,7 @@ else:
 
 # --- City filter for detailed view ---
 if 'city' in data.columns:
-    st.subheader('Find Starbucks Stores by City')
+    st.subheader('🏙️ Find Starbucks Stores by City')
 
     # Dropdown for city selection
     city_options = sorted(data['city'].dropna().unique())
@@ -81,8 +90,8 @@ if 'city' in data.columns:
     st.write(f"### Showing Starbucks stores in **{selected_city}**")
     st.dataframe(filtered_data)
 
-    # --- Map view ---
+    # --- Map view for selected city ---
     if {'latitude', 'longitude'}.issubset(filtered_data.columns):
-        st.subheader("Map of Starbucks Stores in Selected City")
-        st.map(filtered_data[['latitude', 'longitude']])
-
+        st.subheader(f"🗺️ Map of Starbucks Stores in {selected_city}")
+        clean_filtered = clean_coords(filtered_data)
+        st.map(clean_filtered[['latitude', 'longitude']])
