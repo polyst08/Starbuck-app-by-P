@@ -76,22 +76,22 @@ if 'country' in data.columns:
 else:
     st.error("The dataset doesn't have a 'Country' column. Please check your CSV file.")
 
-# --- City filter for detailed view ---
-if 'city' in data.columns:
-    st.subheader('🏙️ Find Starbucks Stores by City')
+# --- Country filter for detailed view ---
+if 'country_full_name' in data.columns:
+    st.subheader('🌐 Find Starbucks Stores by Country')
 
-    # Dropdown for city selection
-    city_options = sorted(data['city'].dropna().unique())
-    selected_city = st.selectbox('Select a City:', city_options)
+    # Dropdown for country selection
+    country_options = sorted(data['country_full_name'].dropna().unique())
+    selected_country = st.selectbox('Select a Country:', country_options)
 
-    # Filter data for selected city
-    filtered_data = data[data['city'] == selected_city]
+    # Filter data for selected country
+    filtered_data = data[data['country_full_name'] == selected_country]
 
-    st.write(f"### Showing Starbucks stores in **{selected_city}**")
+    st.write(f"### Showing Starbucks stores in **{selected_country}**")
     st.dataframe(filtered_data)
 
-    # --- Map view for selected city ---
+    # --- Map view for selected country ---
     if {'latitude', 'longitude'}.issubset(filtered_data.columns):
-        st.subheader(f"🗺️ Map of Starbucks Stores in {selected_city}")
+        st.subheader(f"🗺️ Map of Starbucks Stores in {selected_country}")
         clean_filtered = clean_coords(filtered_data)
         st.map(clean_filtered[['latitude', 'longitude']])
