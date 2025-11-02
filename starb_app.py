@@ -18,19 +18,24 @@ data = load_data(10000)
 # Notify that loading is complete
 data_load_state.text('Done! (Using st.cache_data)')
  
-# Display the raw data
-st.subheader('Raw Data')
-st.write(data)
+# --- Dropdown to select city ---
+if 'city' in data.columns:
+    st.subheader('Find Starbucks Stores by City')
 
-if 'location' in data.columns:
-    st.subheader('Find Starbucks Stores by Location')
-    location_options = sorted(data['location'].dropna().unique())
-    selected_location = st.selectbox('Select a location:', location_options)
+    # Clean up missing values and sort
+    city_options = sorted(data['city'].dropna().unique())
+    selected_city = st.selectbox('Select a City:', city_options)
 
-    # Filter data based on selected location
-    filtered_data = data[data['location'] == selected_location]
+    # Filter data based on selected city
+    filtered_data = data[data['city'] == selected_city]
 
-    st.write(f"Showing Starbucks stores in **{selected_location}**:")
-    st.write(filtered_data)
+    st.write(f"### Showing Starbucks stores in **{selected_city}**")
+    st.dataframe(filtered_data)
+
+    # --- Optional: Map view if coordinates exist ---
+    if {'latitude', 'longitude'}.issubset(filtered_data.columns):
+        st.subheader("Map of Starbucks Stores")
+        st.map(filtered_data[['latitude', 'longitude']])
 else:
-    st.error("The dataset doesn't have a 'location' column. Please check the CSV file.")
+    st.error("The dataset doesn't have a 'City' column. Please check the CSV file.")
+
