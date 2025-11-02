@@ -18,24 +18,38 @@ data = load_data(10000)
 # Notify that loading is complete
 data_load_state.text('Done! (Using st.cache_data)')
  
-# --- Dropdown to select city ---
+# --- Bar chart: Number of stores per country ---
+if 'country' in data.columns:
+    st.subheader('Number of Starbucks Stores per Country')
+
+    # Count number of stores per country
+    country_counts = data['country'].value_counts().reset_index()
+    country_counts.columns = ['country', 'store_count']
+
+    # Display data table
+    st.dataframe(country_counts)
+
+    # Display bar chart
+    st.bar_chart(country_counts.set_index('country'))
+else:
+    st.error("The dataset doesn't have a 'Country' column. Please check your CSV file.")
+
+# --- City filter for detailed view ---
 if 'city' in data.columns:
     st.subheader('Find Starbucks Stores by City')
 
-    # Clean up missing values and sort
+    # Dropdown for city selection
     city_options = sorted(data['city'].dropna().unique())
     selected_city = st.selectbox('Select a City:', city_options)
 
-    # Filter data based on selected city
+    # Filter data for the selected city
     filtered_data = data[data['city'] == selected_city]
 
     st.write(f"### Showing Starbucks stores in **{selected_city}**")
     st.dataframe(filtered_data)
 
-    # --- Optional: Map view if coordinates exist ---
+    # --- Map view ---
     if {'latitude', 'longitude'}.issubset(filtered_data.columns):
-        st.subheader("Map of Starbucks Stores")
+        st.subheader("Map of Starbucks Stores in Selected City")
         st.map(filtered_data[['latitude', 'longitude']])
-else:
-    st.error("The dataset doesn't have a 'City' column. Please check the CSV file.")
 
