@@ -45,6 +45,13 @@ if 'country' in data.columns:
 st.subheader('Raw Data')
 st.write(data)
 
+# --- Global map of all Starbucks stores ---
+if {'latitude', 'longitude'}.issubset(data.columns):
+    st.subheader('🌍 Map of All Starbucks Stores')
+    st.map(data[['latitude', 'longitude']])
+else:
+    st.warning("No latitude/longitude columns found, cannot plot map.")
+
 # --- Bar chart: Number of stores per country ---
 if 'country' in data.columns:
     st.subheader('Number of Starbucks Stores per Country')
@@ -78,3 +85,4 @@ if 'city' in data.columns:
     if {'latitude', 'longitude'}.issubset(filtered_data.columns):
         st.subheader("Map of Starbucks Stores in Selected City")
         st.map(filtered_data[['latitude', 'longitude']])
+
